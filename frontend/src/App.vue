@@ -1,3 +1,8 @@
+<script setup lang="ts">
+import NavigationBar from './components/NavigationBar.vue';
+</script>
+
 <template>
-  <h1 class="text-3xl font-bold underline">Hellow World</h1>
+    <NavigationBar />
+    <router-view></router-view>
 </template>

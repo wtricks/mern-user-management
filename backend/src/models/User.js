@@ -28,8 +28,7 @@ userSchema.methods.toJSON = function () {
   delete user.password;
   delete user.tokenExp;
   delete user.token;
-
-  user.isActive = user.active === 1;
+  
   return user;
 };
 
