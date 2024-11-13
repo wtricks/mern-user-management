@@ -84,6 +84,10 @@ export const signin = async (req, res) => {
             return res.status(400).json({ message: 'Invalid credentials' });
         }
 
+        user.lastLogin = Date.now();
+        user.loginIp = req.headers['x-forwarded-for'] || req.socket.remoteAddress || '';
+        await user.save();
+
         const accessToken = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '1d' });
 
         res.status(200).json({ message: 'User signed in successfully', user, accessToken });
