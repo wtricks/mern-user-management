@@ -56,3 +56,7 @@ out/
 
 # TypeScript (if applicable)
 *.tsbuildinfo
+
+
+# 
+uploads/
