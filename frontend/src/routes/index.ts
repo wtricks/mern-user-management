@@ -15,21 +15,25 @@ const router = createRouter({
                 {
                     path: 'signin',
                     name: 'signin',
+                    // @ts-ignore
                     component: () => import('../views/auth/SigninView.vue')
                 },
                 {
                     path: 'signup',
                     name: 'signup',
+                    // @ts-ignore
                     component: () => import('../views/auth/SignupView.vue')
                 },
                 {
                     path: 'forget-password',
                     name: 'forget-password',
+                    // @ts-ignore
                     component: () => import('../views/auth/forgetPasswordView.vue')
                 },
                 {
                     path: 'reset-password',
                     name: 'reset-password',
+                    // @ts-ignore
                     component: () => import('../views/auth/resetPasswordView.vue')
                 },
                 {
@@ -60,6 +64,7 @@ const router = createRouter({
                 {
                     path: '',
                     name: 'profile',
+                    // @ts-ignore
                     component: () => import('../views/profile/ProfileView.vue')
                 },
                 {
@@ -77,7 +82,7 @@ const router = createRouter({
     ]
 })
 
-router.beforeEach((to, from, next) => {
+router.beforeEach((to, _from, next) => {
     if (to.name == 'home') {
         return next()
     }
