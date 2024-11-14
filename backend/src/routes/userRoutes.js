@@ -10,7 +10,8 @@ import {
     resetPassword,
     signin, 
     signup, 
-    updateUser
+    updateUser,
+    verifyToken
 } from '../controllers/userController.js';
 
 import storage from '../config/multer.js';
@@ -53,6 +54,11 @@ userRoutes.post('/reset-password', [
     body('password').isLength({ min: 6 }).withMessage('Password must be at least 6 characters long')
 ], handleValidationErrors, resetPassword);
 
+// Verify token
+userRoutes.post('/verify-token', [
+    body('token').notEmpty().withMessage('Token is required')
+], handleValidationErrors, verifyToken);
+
 // Get Current User Info (Me)
 userRoutes.get('/me', authMiddleware, getMe);
 
@@ -72,7 +78,8 @@ userRoutes.get('/:id', authMiddleware, adminMiddleware, [
 
 // Update User
 userRoutes.put('/:id', authMiddleware, [
-    param('id').isMongoId().withMessage('Invalid user ID format')
+    param('id').isMongoId().withMessage('Invalid user ID format'),
+    body('role').optional().isIn(['admin', 'user']).withMessage('Role must be "admin" or "user"')
 ], storage.single('avatar'), handleValidationErrors, updateUser);
 
 // Delete User (admin only)

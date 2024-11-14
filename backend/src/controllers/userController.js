@@ -171,6 +171,7 @@ export const resetPassword = async (req, res) => {
 
         const hashedPassword = await bcryptjs.hash(password, bcryptjs.genSaltSync(10));
 
+        user.active = 1;
         user.password = hashedPassword;
         user.token = null;
         user.tokenExp = null;
@@ -182,6 +183,39 @@ export const resetPassword = async (req, res) => {
         res.status(500).json({ message: 'Server error' });
     }
 };
+
+/**
+ * Verifies the token by validating input, checking for existing users with a valid token, and returns a 200 status with a success message if the token is valid.
+ * If the token is invalid or expired, it returns a 400 status with an error message.
+ * In case of any errors, it logs the error and responds with a 500 status.
+ * 
+ * @param {Object} req - Request object containing the token.
+ * @param {Object} res - Response object used to send the response.
+ */
+export const verifyToken = async (req, res) => {
+    const { token } = matchedData(req);
+
+    try {
+        const user = User.findOne({ token });
+        if (!user) {
+            return res.status(400).json({ message: 'Invalid token' });
+        }
+
+        if (user.tokenExp < Date.now()) {
+            return res.status(400).json({ message: 'Token is expired' });
+        }
+
+        user.active = 1;
+        user.token = null;
+        user.tokenExp = null;
+        await user.save();
+
+        res.status(200).json({ message: 'Token is valid' });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Server error' });
+    }
+}
 
 /**
  * Returns the user object associated with the JWT token in the Authorization header.
@@ -280,7 +314,7 @@ export const getUser = async (req, res) => {
  * @param {Object} res - Response object used to send the response.
  */
 export const updateUser = async (req, res) => {
-    const { firstName, lastName } = matchedData(req);
+    const { firstName, lastName, role } = matchedData(req);
 
     try {
         const user = User.findById(req.params.id);
@@ -294,8 +328,13 @@ export const updateUser = async (req, res) => {
         }
 
         user.firstName = firstName || user.firstName;
-        user.lastName = lastName || user.lastName
-        user.avatar = avatar || user.avatar
+        user.lastName = lastName || user.lastName;
+        user.avatar = avatar || user.avatar;
+
+        if (req.user.role == 'admin') {
+            user.role = role || user.role;
+        }
+
         await user.save();
 
         res.status(200).json(user);
