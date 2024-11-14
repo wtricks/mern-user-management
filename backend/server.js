@@ -3,10 +3,10 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import path from 'node:path';
 
+dotenv.config(); // load env vars
+
 import connectDB from './src/config/db.js';
 import userRoutes from './src/routes/userRoutes.js';
-
-dotenv.config(); // load env vars
 
 const app = express();
 

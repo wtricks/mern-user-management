@@ -23,15 +23,15 @@ const userSchema = new mongoose.Schema(
 );
 
 // remove password, token, tokenExp from response
-// userSchema.set('toJSON', {
-//   transform: function (doc, ret, options) {
-//     delete ret.password;
-//     delete ret.tokenExp;
-//     delete ret.token;
+userSchema.set('toJSON', {
+  transform: function (doc, ret, options) {
+    delete ret.password;
+    delete ret.tokenExp;
+    delete ret.token;
 
-//     return ret;
-//   }
-// });
+    return ret;
+  }
+});
 
 const User = mongoose.model("User", userSchema);
 export default User

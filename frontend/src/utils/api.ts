@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { useToast } from 'vue-toast-notification';
 
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL + '/api',
@@ -24,21 +25,21 @@ api.interceptors.response.use(
     return response;
   },
   (error) => {
+    const toast = useToast();
+
     if (error.response) {
-      switch (error.response.status) {
-        case 401:
-          console.error('Unauthorized, please login.');
-          break;
-        case 500:
-          console.error('Server error, please try again later.');
-          break;
-        default:
-          console.error('An error occurred:', error.response.data);
+      const res = error.response.data;
+      if (res.errors) {
+        res.errors.forEach((error: any) => {
+          toast.error(error.msg);
+        })
+      } else {
+        toast.error(res.message);
       }
     } else if (error.request) {
-      console.error('No response received from server.');
+      toast.error('No response received from server.');
     } else {
-      console.error('Error setting up request:', error.message);
+      toast.error('Error setting up request:', error.message);
     }
 
     return Promise.reject(error);

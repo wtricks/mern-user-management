@@ -20,9 +20,9 @@ export const signup = async (req, res) => {
     const { firstName, lastName, email, password } = matchedData(req);
 
     try {
-        const user = User.findOne({ email });
+        const user = await User.findOne({ email });
         if (user) {
-            return res.status(400).json({ message: 'User already exists', user });
+            return res.status(400).json({ message: 'User already exists' });
         }
 
         const hashedPassword = await bcryptjs.hash(password, bcryptjs.genSaltSync(10));
@@ -42,9 +42,11 @@ export const signup = async (req, res) => {
         // generate verification link
         const verificationLink = `${process.env.FRONTEND_URI}/auth/verify?token=${randomToken}`;
 
+        console.log(process.env.EMAIL_FROM);
+
         // send email (without 'await')
         transporter.sendMail({
-            from: process.env.EMAIL_FROM_USER,
+            from: process.env.EMAIL_FROM,
             to: email,
             subject: 'Welcome to our app',
             html: `Verify you email by clicking <a href="${verificationLink}">here</a>`,
@@ -71,7 +73,7 @@ export const signin = async (req, res) => {
     const { email, password } = matchedData(req);
 
     try {
-        const user = User.findOne({ email });
+        const user = await User.findOne({ email });
         if (!user) {
             return res.status(400).json({ message: 'Invalid credentials' });
         }
@@ -112,7 +114,7 @@ export const forgetPassword = async (req, res) => {
     const { email } = matchedData(req);
 
     try {
-        const user = User.findOne({ email });
+        const user = await User.findOne({ email });
         if (!user) {
             return res.status(400).json({ message: 'User not found' });
         }
@@ -128,10 +130,10 @@ export const forgetPassword = async (req, res) => {
         await user.save();
 
         // generate verification link
-        const verificationLink = `${process.env.FRONTEND_URI}/reset-password/${randomToken}`;
+        const verificationLink = `${process.env.FRONTEND_URI}/auth/reset-password?token=${randomToken}`;
 
-        // send email
-        await transporter.sendMail({
+        // send email (without 'await')
+        transporter.sendMail({
             from: process.env.EMAIL_USER,
             to: email,
             subject: 'Reset your password',
@@ -160,7 +162,7 @@ export const resetPassword = async (req, res) => {
     const { password, token } = matchedData(req);
 
     try {
-        const user = User.findOne({ token });
+        const user = await User.findOne({ token });
         if (!user) {
             return res.status(400).json({ message: 'Invalid token' });
         }
@@ -196,7 +198,7 @@ export const verifyToken = async (req, res) => {
     const { token } = matchedData(req);
 
     try {
-        const user = User.findOne({ token });
+        const user = await User.findOne({ token });
         if (!user) {
             return res.status(400).json({ message: 'Invalid token' });
         }
@@ -210,7 +212,7 @@ export const verifyToken = async (req, res) => {
         user.tokenExp = null;
         await user.save();
 
-        res.status(200).json({ message: 'Token is valid' });
+        res.status(200).json({ message: 'Email is verified.' });
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: 'Server error' });
@@ -228,7 +230,7 @@ export const getMe = async (req, res) => {
     const userId = req.user.id;
 
     try  {
-        const user = User.findById(userId);
+        const user = await User.findById(userId);
         if (!user) {
             return res.status(404).json({ message: 'User not found' });
         }
@@ -261,12 +263,12 @@ export const getAllUsers = async (req, res) => {
     } = matchedData(req);
 
     try {
-        const users = User.find({ 
+        const users = await User.find({ 
             $or: [
                 { firstName: { $regex: query, $options: 'i' } }, 
                 { lastName: { $regex: query, $options: 'i' } }
             ] 
-        })
+        }).select('-password -token -tokenExp')
             .limit(limit)
             .skip((page - 1) * limit)
             .sort({ [sortBy]: sortOrder == 'asc' ? 1 : -1 });
@@ -289,7 +291,7 @@ export const getUser = async (req, res) => {
     const { id } = matchedData(req);
 
     try {
-        const user = User.findById(id);
+        const user = await User.findById(id);
         if (!user) {
             return res.status(404).json({ message: 'User not found' });
         }
@@ -317,7 +319,7 @@ export const updateUser = async (req, res) => {
     const { firstName, lastName, role, email } = matchedData(req);
 
     try {
-        const user = User.findById(req.params.id);
+        const user = await User.findById(req.params.id);
         if (!user) {
             return res.status(404).json({ message: 'User not found' });
         }

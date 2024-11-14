@@ -3,75 +3,68 @@ import { ref, computed } from "vue";
 import { useToast } from 'vue-toast-notification'
 
 import api from "../../utils/api";
+import { signUp } from "../../services/users";
 
 const toast = useToast();
 
 const form = ref({
-    firstname: "",
-    lastname: "",
+    firstName: "",
+    lastName: "",
     email: "",
     password: "",
     confirmPassword: "",
 });
 
-const errors = ref({
-    firstname: "",
-    lastname: "",
-    email: "",
-    password: "",
-    confirmPassword: "",
-});
-
+const hasError = ref(false)
 const isLoading = ref(false);
 
-const isFormValid = computed(() => {
-    return (
-        form.value.firstname &&
-        form.value.lastname &&
-        (form.value.email && /\S+@\S+\.\S+/.test(form.value.email)) &&
-        form.value.password &&
-        form.value.password === form.value.confirmPassword
-    );
-});
-
 const validateForm = () => {
-    if (!form.value.firstname) {
-        toast.error("First name is required.") 
-    } else if (!form.value.lastname) {
-        toast.error("Last name is required.") 
-    } else if (!form.value.email || !/\S+@\S+\.\S+/.test(form.value.email)) {
-        toast.error("Valid email is required.") 
-    } if (!form.value.password) {
-        toast.error("Password is required.") 
+    hasError.value = false;
+
+    if (!form.value.firstName) {
+        hasError.value = true;
+        toast.error("First name is required");
+    }
+    else if (!form.value.lastName) {
+        hasError.value = true;
+        toast.error("Last name is required");
+    }
+    else if (!form.value.email || !/\S+@\S+\.\S+/.test(form.value.email)) {
+        hasError.value = true;
+        toast.error("Email is invalid");
+    }
+    else if (!form.value.password) {
+        hasError.value = true;
+        toast.error("Password is required");
     } else if (form.value.password.length < 6) {
-        toast.error("Password length should be atleast 6.") 
-    } else if (form.value.password != form.value.confirmPassword) {
-        toast.error("Passwords do not match.")
+        hasError.value = true;
+        toast.error("Password must be at least 6 characters");
+    }
+    else if (form.value.password !== form.value.confirmPassword) {
+        hasError.value = true;
+        toast.error("Passwords do not match");
     }
 };
 
 const handleSubmit = async () => {
     validateForm();
 
-    if (Object.values(errors.value).some((error) => error)) {
+    if (hasError.value) {
         return;
     }
 
     isLoading.value = true;
 
-    api.post("/users/signup", {
-        firstname,
-        lastname,
-        email,
-        password
-    }).then((res) => {
+    signUp(form.value).then((res) => {
         form.value = {
-            firstname: "",
-            lastname: "",
+            firstName: "",
+            lastName: "",
             email: "",
             password: "",
             confirmPassword: "",
         }
+
+        toast.success("Account created successfully, please check your email to activate your account.");
     }).finally(() => isLoading.value = false);
 };
 </script>
@@ -82,35 +75,31 @@ const handleSubmit = async () => {
             <h2 class="text-2xl font-semibold text-center mb-6">Create an Account</h2>
             <form @submit.prevent="handleSubmit">
                 <div class="mb-4">
-                    <label for="firstname" class="block text-sm font-medium text-gray-700">First Name</label>
-                    <input v-model="form.firstname" type="text" id="firstname"
+                    <label for="firstName" class="block text-sm font-medium text-gray-700">First Name</label>
+                    <input v-model="form.firstName" type="text" id="firstName"
                         class="w-full mt-1 p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
-                        placeholder="John" :class="{ 'border-red-500': errors.firstname }" />
-                    <span v-if="errors.firstname" class="text-red-500 text-sm">{{ errors.firstname }}</span>
+                        placeholder="John"/>
                 </div>
 
                 <div class="mb-4">
-                    <label for="lastname" class="block text-sm font-medium text-gray-700">Last Name</label>
-                    <input v-model="form.lastname" type="text" id="lastname"
+                    <label for="lastName" class="block text-sm font-medium text-gray-700">Last Name</label>
+                    <input v-model="form.lastName" type="text" id="lastName"
                         class="w-full mt-1 p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
-                        placeholder="Doe" :class="{ 'border-red-500': errors.lastname }" />
-                    <span v-if="errors.lastname" class="text-red-500 text-sm">{{ errors.lastname }}</span>
+                        placeholder="Doe" />
                 </div>
 
                 <div class="mb-4">
                     <label for="email" class="block text-sm font-medium text-gray-700">Email</label>
                     <input v-model="form.email" type="email" id="email"
                         class="w-full mt-1 p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
-                        placeholder="example@email.com" :class="{ 'border-red-500': errors.email }" />
-                    <span v-if="errors.email" class="text-red-500 text-sm">{{ errors.email }}</span>
+                        placeholder="example@email.com" />
                 </div>
 
                 <div class="mb-4">
                     <label for="password" class="block text-sm font-medium text-gray-700">Password</label>
                     <input v-model="form.password" type="password" id="password"
                         class="w-full mt-1 p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
-                        placeholder="********" :class="{ 'border-red-500': errors.password }" />
-                    <span v-if="errors.password" class="text-red-500 text-sm">{{ errors.password }}</span>
+                        placeholder="********" />
                 </div>
 
                 <div class="mb-4">
@@ -118,11 +107,10 @@ const handleSubmit = async () => {
                         Password</label>
                     <input v-model="form.confirmPassword" type="password" id="confirm-password"
                         class="w-full mt-1 p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
-                        placeholder="********" :class="{ 'border-red-500': errors.confirmPassword }" />
-                    <span v-if="errors.confirmPassword" class="text-red-500 text-sm">{{ errors.confirmPassword }}</span>
+                        placeholder="********" />
                 </div>
 
-                <button type="submit" :disabled="isLoading || !isFormValid" :class="{ 'opacity-50 cursor-not-allowed': isLoading }"
+                <button type="submit" :disabled="isLoading" :class="{ 'opacity-50 cursor-not-allowed': isLoading }"
                     class="w-full mt-4 bg-blue-500 text-white p-2 rounded-md hover:bg-blue-600 cursor-pointer active:opacity-70 transition">
                     <span v-if="isLoading">Loading...</span>
                     <span v-else>Sign Up</span>

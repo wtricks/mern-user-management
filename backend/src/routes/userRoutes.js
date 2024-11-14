@@ -31,8 +31,8 @@ const handleValidationErrors = (req, res, next) => {
 
 // Sign Up
 userRoutes.post('/signup', [
-    body('firstName').notEmpty().withMessage('First name is required').isAlpha().withMessage('First name must contain only letters'),
-    body('lastName').notEmpty().withMessage('Last name is required').isAlpha().withMessage('Last name must contain only letters'),
+    body('firstName').notEmpty().withMessage('First name is required').bail().trim().isAlpha().withMessage('First name must contain only letters'),
+    body('lastName').notEmpty().withMessage('Last name is required').bail().trim().isAlpha().withMessage('Last name must contain only letters'),
     body('email').isEmail().withMessage('Email is invalid'),
     body('password').isLength({ min: 6 }).withMessage('Password must be at least 6 characters long')
 ], handleValidationErrors, signup);
@@ -40,7 +40,7 @@ userRoutes.post('/signup', [
 // Sign In
 userRoutes.post('/signin', [
     body('email').isEmail().withMessage('Email is invalid'),
-    body('password').isLength({ min: 6 }).withMessage('Password must be at least 6 characters long')
+    body('password').notEmpty().withMessage('Password is required')
 ], handleValidationErrors, signin);
 
 // Forget Password
@@ -81,8 +81,8 @@ userRoutes.put('/:id', authMiddleware, [
     param('id').isMongoId().withMessage('Invalid user ID format'),
     body('role').optional().isIn(['admin', 'user']).withMessage('Role must be "admin" or "user"'),
     body('avatar').optional().isString().withMessage('Avatar must be a string'),
-    body('firstName').optional().isAlpha().withMessage('First name must contain only letters'),
-    body('lastName').optional().isAlpha().withMessage('Last name must contain only letters'),
+    body('firstName').optional().trim().isAlpha().withMessage('First name must contain only letters'),
+    body('lastName').optional().trim().isAlpha().withMessage('Last name must contain only letters'),
     body('email').optional().isEmail().withMessage('Email is invalid')
 ], storage.single('avatar'), handleValidationErrors, updateUser);
 

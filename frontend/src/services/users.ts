@@ -3,51 +3,51 @@ import { ForgetPasswordData, GetAllUsersParams, ResetPasswordData, UserSignInDat
 
 // handle Sign Up
 export const signUp = (data: UserSignUpData) => {
-    return api.post('/signup', data);
+    return api.post('/users/signup', data);
 };
 
 // handle Sign In
 export const signIn = (data: UserSignInData) => {
-    return api.post('/signin', data);
+    return api.post('/users/signin', data);
 };
 
 // handle Forget Password
 export const forgetPassword = (data: ForgetPasswordData) => {
-    return api.post('/forget-password', data);
+    return api.post('/users/forget-password', data);
 };
 
 // handle Reset Password
 export const resetPassword = (data: ResetPasswordData) => {
-    return api.post('/reset-password', data);
+    return api.post('/users/reset-password', data);
 };
 
 // handle Verify Token
 export const verifyToken = (data: VerifyTokenData) => {
-    return api.post('/verify-token', data);
+    return api.post('/users/verify-token', data);
 };
 
 // get current user information (Me)
 export const getMe = () => {
-    return api.get('/me');
+    return api.get('/users/me');
 };
 
 // get all users (Admin only)
 export const getAllUsers = (params: GetAllUsersParams) => {
     const queryParams = new URLSearchParams(params as Record<string, string>).toString();
-    return api.get(`/`, { params: queryParams });
+    return api.get(`/users/`, { params: queryParams });
 };
 
 // get a user by ID (Admin only)
 export const getUserById = (id: string) => {
-    return api.get(`/${id}`);
+    return api.get(`/users/${id}`);
 };
 
 // update a user
 export const updateUser = (id: string, data: UserUpdateData) => {
-    return api.put(`/${id}`, data);
+    return api.put(`/users/${id}`, data);
 };
 
 // delete a user (Admin only)
 export const deleteUser = (id: string) => {
-    return api.delete(`/${id}`);
+    return api.delete(`/users/${id}`);
 };

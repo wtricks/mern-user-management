@@ -1,20 +1,18 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue';
 import { useRoute } from 'vue-router';
-
-import api from '../../utils/api';
+import { verifyToken } from '../../services/users';
 
 const route = useRoute();
 const isVerified = ref(false)
 
 onMounted(() => {
-    const token = route.query.token;
+    const token = route.query.token as string
 
     if (token) {
-        api.post('/users/verify-token', { token })
-            .then(() => {
-                isVerified.value = true
-            });
+        verifyToken({ token }).then(() => {
+            isVerified.value = true
+        })
     }
 })
 </script>
