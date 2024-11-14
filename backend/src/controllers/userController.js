@@ -314,7 +314,7 @@ export const getUser = async (req, res) => {
  * @param {Object} res - Response object used to send the response.
  */
 export const updateUser = async (req, res) => {
-    const { firstName, lastName, role } = matchedData(req);
+    const { firstName, lastName, role, email } = matchedData(req);
 
     try {
         const user = User.findById(req.params.id);
@@ -333,6 +333,7 @@ export const updateUser = async (req, res) => {
 
         if (req.user.role == 'admin') {
             user.role = role || user.role;
+            user.email = email || user.email;
         }
 
         await user.save();

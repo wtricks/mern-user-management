@@ -79,7 +79,11 @@ userRoutes.get('/:id', authMiddleware, adminMiddleware, [
 // Update User
 userRoutes.put('/:id', authMiddleware, [
     param('id').isMongoId().withMessage('Invalid user ID format'),
-    body('role').optional().isIn(['admin', 'user']).withMessage('Role must be "admin" or "user"')
+    body('role').optional().isIn(['admin', 'user']).withMessage('Role must be "admin" or "user"'),
+    body('avatar').optional().isString().withMessage('Avatar must be a string'),
+    body('firstName').optional().isAlpha().withMessage('First name must contain only letters'),
+    body('lastName').optional().isAlpha().withMessage('Last name must contain only letters'),
+    body('email').optional().isEmail().withMessage('Email is invalid')
 ], storage.single('avatar'), handleValidationErrors, updateUser);
 
 // Delete User (admin only)
