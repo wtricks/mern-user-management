@@ -22,7 +22,7 @@ export const signup = async (req, res) => {
     try {
         const user = User.findOne({ email });
         if (user) {
-            return res.status(400).json({ message: 'User already exists' });
+            return res.status(400).json({ message: 'User already exists', user });
         }
 
         const hashedPassword = await bcryptjs.hash(password, bcryptjs.genSaltSync(10));
@@ -40,11 +40,11 @@ export const signup = async (req, res) => {
         await newUser.save();
 
         // generate verification link
-        const verificationLink = `${process.env.FRONTEND_URI}/verify/${randomToken}`;
+        const verificationLink = `${process.env.FRONTEND_URI}/auth/verify?token=${randomToken}`;
 
-        // send email
-        await transporter.sendMail({
-            from: process.env.EMAIL_USER,
+        // send email (without 'await')
+        transporter.sendMail({
+            from: process.env.EMAIL_FROM_USER,
             to: email,
             subject: 'Welcome to our app',
             html: `Verify you email by clicking <a href="${verificationLink}">here</a>`,

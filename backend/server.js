@@ -3,8 +3,8 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import path from 'node:path';
 
-import connectDB from './config/db.js';
-import userRoutes from './routes/userRoutes.js';
+import connectDB from './src/config/db.js';
+import userRoutes from './src/routes/userRoutes.js';
 
 dotenv.config(); // load env vars
 

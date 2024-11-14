@@ -1,4 +1,4 @@
-const mongoose = require("mongoose");
+import mongoose from "mongoose";
 
 const userSchema = new mongoose.Schema(
   {
@@ -23,14 +23,15 @@ const userSchema = new mongoose.Schema(
 );
 
 // remove password, token, tokenExp from response
-userSchema.methods.toJSON = function () {
-  const user = this.toObject();
-  delete user.password;
-  delete user.tokenExp;
-  delete user.token;
-  
-  return user;
-};
+// userSchema.set('toJSON', {
+//   transform: function (doc, ret, options) {
+//     delete ret.password;
+//     delete ret.tokenExp;
+//     delete ret.token;
+
+//     return ret;
+//   }
+// });
 
 const User = mongoose.model("User", userSchema);
 export default User
