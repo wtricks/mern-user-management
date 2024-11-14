@@ -20,18 +20,21 @@ export const useAuthStore = defineStore('auth', () => {
         localStorage.setItem('authToken', accessToken);
     }
 
+    const updateUser = (newUser: User) => {
+        user.value = newUser;
+    }
+
     const logout = () => {
         localStorage.removeItem('authToken');
         user.value = null;
     }
 
-    // Initial user
-    // fetchUser();
-
     return {
         user,
         isLoggedIn,
         signInUser,
-        logout
+        logout,
+        fetchUser,
+        updateUser
     }
 })

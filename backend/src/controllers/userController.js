@@ -2,6 +2,9 @@ import { matchedData } from 'express-validator';
 import bcryptjs from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import fs from 'node:fs';
+import path from 'node:path'
+
+import { rootDirectory } from '../config/constants.js';
 
 import transporter from '../config/mail.js';
 import User from '../models/User.js';
@@ -273,7 +276,14 @@ export const getAllUsers = async (req, res) => {
             .skip((page - 1) * limit)
             .sort({ [sortBy]: sortOrder == 'asc' ? 1 : -1 });
 
-        res.status(200).json(users);
+        const total = await User.countDocuments({
+            $or: [
+                { firstName: { $regex: query, $options: 'i' } }, 
+                { lastName: { $regex: query, $options: 'i' } }
+            ]
+            });
+
+        res.status(200).json({users, total});
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: 'Server error' });
@@ -316,7 +326,8 @@ export const getUser = async (req, res) => {
  * @param {Object} res - Response object used to send the response.
  */
 export const updateUser = async (req, res) => {
-    const { firstName, lastName, role, email } = matchedData(req);
+    // TODO: use 'matchedData' here
+    const { firstName, lastName, role, email } = req.body;
 
     try {
         const user = await User.findById(req.params.id);
@@ -324,9 +335,14 @@ export const updateUser = async (req, res) => {
             return res.status(404).json({ message: 'User not found' });
         }
 
-        const avatar = req.file ? req.file.filename : user.avatar;
+        const avatar = req.file ? ('uploads/' + req.file.filename) : user.avatar;
         if (req.file && user.avatar) {
-            fs.unlink(path.join(process.cwd(), '..', 'uploads', user.avatar));
+            const filePath = path.join(rootDirectory, user.avatar);
+            if (fs.existsSync(filePath)) {
+                fs.unlink(filePath, (err) => {
+                    if (err) throw new Error("Failed to delete old avatar file");
+                });
+            }
         }
 
         user.firstName = firstName || user.firstName;
@@ -334,7 +350,7 @@ export const updateUser = async (req, res) => {
         user.avatar = avatar || user.avatar;
 
         if (req.user.role == 'admin') {
-            user.role = role || user.role;
+            user.role = req.user.id == req.params.id ? 'admin' : (role || user.role);
             user.email = email || user.email;
         }
 
@@ -356,6 +372,10 @@ export const updateUser = async (req, res) => {
  */
 export const deleteUser = async (req, res) => {
     const { id } = matchedData(req);
+
+    if (req.user.id == id && req.user.role == 'admin') {
+        return res.status(400).json({ message: 'You cannot delete yourself' });
+    }
 
     try {
         await User.findByIdAndDelete(id);

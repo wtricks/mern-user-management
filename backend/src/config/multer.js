@@ -1,14 +1,16 @@
 import multer from 'multer';
 import path from 'path';
+import fs from 'node:fs';
+
+
+import { rootDirectory } from './constants.js';
 
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
-        // check if directory exists
-        const uploadDir = path.join(process.cwd(), '..', 'uploads');
+        const uploadDir = path.join(rootDirectory, 'uploads');
         if (!fs.existsSync(uploadDir)) {
-            fs.mkdirSync(uploadDir);
+            fs.mkdirSync(uploadDir, { recursive: true });
         }
-
         cb(null, uploadDir);
     },
     filename: function (req, file, cb) {

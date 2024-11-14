@@ -1,13 +1,28 @@
 <script setup lang="ts">
+import { watch } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 import { useAuthStore } from '../store/useAuthStore';
 import { ref } from 'vue';
 
+const route = useRoute();
+const router = useRouter()
 const authStore = useAuthStore();
+
 const isMobileMenuOpen = ref(false);
 
 const toggleMobileMenu = () => {
   isMobileMenuOpen.value = !isMobileMenuOpen.value;
 };
+
+watch(() => authStore.isLoggedIn, () => {
+  if (route.name == 'home') return;
+  
+  if (!authStore.isLoggedIn) { 
+    router.push('/auth/signin')
+  } else {
+    router.push('/profile')  
+  }
+})
 </script>
 
 <template>
@@ -18,7 +33,7 @@ const toggleMobileMenu = () => {
       <div class="hidden md:flex space-x-4">
         <template v-if="authStore.isLoggedIn">
           <router-link to="/profile" class="text-white hover:underline">Profile</router-link>
-          <router-link to="/dashboard" class="text-white hover:underline">Dashboard</router-link>
+          <router-link to="/users" class="text-white hover:underline" v-if="authStore.user?.role === 'admin'">Dashboard</router-link>
         </template>
         <template v-else>
           <router-link to="/auth/signin" class="text-white hover:underline">Sign In</router-link>
@@ -53,7 +68,7 @@ const toggleMobileMenu = () => {
       >
         <template v-if="authStore.isLoggedIn">
           <router-link to="/profile" class="block hover:underline">Profile</router-link>
-          <router-link to="/dashboard" class="block hover:underline">Dashboard</router-link>
+          <router-link to="/users" class="text-white hover:underline" v-if="authStore.user?.role === 'admin'">Dashboard</router-link>
         </template>
         <template v-else>
           <router-link to="/auth/signin" class="block hover:underline">Sign In</router-link>

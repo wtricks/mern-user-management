@@ -33,8 +33,7 @@ export const getMe = () => {
 
 // get all users (Admin only)
 export const getAllUsers = (params: GetAllUsersParams) => {
-    const queryParams = new URLSearchParams(params as Record<string, string>).toString();
-    return api.get(`/users/`, { params: queryParams });
+    return api.get(`/users/`, { params });
 };
 
 // get a user by ID (Admin only)
@@ -44,7 +43,7 @@ export const getUserById = (id: string) => {
 
 // update a user
 export const updateUser = (id: string, data: UserUpdateData) => {
-    return api.put(`/users/${id}`, data);
+    return api.put(`/users/${id}`, data, { headers: { 'Content-Type': 'multipart/form-data' } });
 };
 
 // delete a user (Admin only)

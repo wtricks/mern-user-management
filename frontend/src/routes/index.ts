@@ -1,4 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
+import { useAuthStore } from '../store/useAuthStore'
 
 const router = createRouter({
     history: createWebHistory(import.meta.env.BASE_URL),
@@ -74,6 +75,24 @@ const router = createRouter({
             component: () => import('../views/NotFoundView.vue')
         }
     ]
+})
+
+router.beforeEach((to, from, next) => {
+    if (to.name == 'home') {
+        return next()
+    }
+    
+    const authStore = useAuthStore();
+
+    const isLoggedInPage = to.name === 'signin' || to.name === 'signup' || to.name === 'verify-token' || to.name === 'reset-password' || to.name === 'forget-password'; 
+
+    if (isLoggedInPage && authStore.isLoggedIn) {
+        next({ name: 'profile' })
+    } else if (!isLoggedInPage && !authStore.isLoggedIn) {
+        next({ name: 'signin' })
+    } else {
+        next()
+    }
 })
 
 export default router
